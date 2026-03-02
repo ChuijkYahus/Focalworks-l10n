@@ -2,6 +2,7 @@ package caelum.focalworks.mixin;
 
 import at.petrak.hexcasting.api.addldata.ADIotaHolder;
 import at.petrak.hexcasting.api.casting.SpellList;
+import at.petrak.hexcasting.api.casting.castables.SpellAction;
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
 import at.petrak.hexcasting.api.casting.eval.OperationResult;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
@@ -9,7 +10,6 @@ import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.casting.mishaps.MishapBadBlock;
-import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerRead;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite;
 import caelum.focalworks.api.RiggedHexFinder;
 import gay.object.ioticblocks.api.IoticBlocksAPI;
@@ -31,16 +31,14 @@ public class MixinOpWriteBlock {
     @Unique
     private static CastingVM vm;
 
-    @Inject(method="operate",at= @At(value = "INVOKE", target = "executeWithOpCount(Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction;Ljava/util/List;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;)Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction$CostMediaActionResult;"))
+    @Inject(method="operate",at= @At(value = "INVOKE", target = "executeWithUserdata(Ljava/util/List;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lnet/minecraft/nbt/CompoundTag;)Lat/petrak/hexcasting/api/casting/castables/SpellAction$Result;"))
     private static void operate(CastingEnvironment env, CastingImage image, SpellContinuation continuation, CallbackInfoReturnable<OperationResult> cir) {
         vm = new CastingVM(image,env);
     }
     @Inject(method="operate",at= @At(value = "INVOKE_ASSIGN", target = "executeWithOpCount(Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction;Ljava/util/List;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;)Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction$CostMediaActionResult;"))
     private static void operate_after(CastingEnvironment env, CastingImage image, SpellContinuation continuation, CallbackInfoReturnable<OperationResult> cir) {
-
         image=vm.getImage();
         env=vm.getEnv();
-
     }
     @Inject(method="execute",at= @At("HEAD"), cancellable = true, remap = false)
     private void execute(List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<List<Iota>> cir) {
@@ -57,6 +55,7 @@ public class MixinOpWriteBlock {
                 throw MishapBadBlock.of(target,"iota.read");
             }
             SpellList hex = RiggedHexFinder.get_rig_read_vec(target,env.getWorld());
+            new SpellAction.Result();
             cir.setReturnValue(List.of(datum));
         });
 
