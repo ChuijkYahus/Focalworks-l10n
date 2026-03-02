@@ -36,15 +36,14 @@ public class MixinOpTheCoolerRead {
         // you know, now that I think about this, this method is really cursed
         List<Iota> stack = image.getStack();
         Iota x = stack.get(stack.size()-1);
-        if (!(x instanceof EntityIota)) {
-            throw MishapInvalidIota.ofType(x,0,"entity");
-        }
-        Entity entity = ((EntityIota) x).getEntity();
-        ItemStack item = ((ItemEntity)entity).getItem();
-        if (item.getOrCreateTag().contains("riggedwrite") && item.hasTag()) {
-            ListIota hex = (ListIota)IotaType.deserialize((CompoundTag) item.getTag().get("riggedwrite"),env.getWorld());
-            FrameEvaluate frame = new FrameEvaluate(hex.getList(), true);
-            cir.setReturnValue(new OperationResult(cir.getReturnValue().component1(),cir.getReturnValue().component2(),continuation.pushFrame(frame),cir.getReturnValue().component4()));
+        if ((x instanceof EntityIota)) {
+            Entity entity = ((EntityIota) x).getEntity();
+            ItemStack item = ((ItemEntity)entity).getItem();
+            if (item.getOrCreateTag().contains("riggedwrite") && item.hasTag()) {
+                ListIota hex = (ListIota)IotaType.deserialize((CompoundTag) item.getTag().get("riggedwrite"),env.getWorld());
+                FrameEvaluate frame = new FrameEvaluate(hex.getList(), true);
+                cir.setReturnValue(new OperationResult(cir.getReturnValue().component1(),cir.getReturnValue().component2(),continuation.pushFrame(frame),cir.getReturnValue().component4()));
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package caelum.focalworks.mixin;
+package caelum.focalworks.mixin.basic_hands;
 
 
 import at.petrak.hexcasting.api.addldata.ADIotaHolder;

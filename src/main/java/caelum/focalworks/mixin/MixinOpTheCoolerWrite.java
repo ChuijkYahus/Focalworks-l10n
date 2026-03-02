@@ -38,52 +38,49 @@ public class MixinOpTheCoolerWrite {
             CastingEnvironment env, CastingImage image, SpellContinuation continuation, Operation<OperationResult> original
     ) {
         // please don't sue me, I know it's shit :sob:
-        CastingImage img;
-        SpellContinuation cont;
+        CastingImage img = image;
+        SpellContinuation cont = continuation;
         List<Iota> stack = image.getStack();
         Iota x = stack.get(stack.size()-2);
         Iota datum = stack.get(stack.size()-1);
-        stack.remove(stack.size()-2);
-        if (!(x instanceof EntityIota)) {
-            throw MishapInvalidIota.ofType(x,0,"entity");
-        }
-        Entity entity = ((EntityIota) x).getEntity();
-        ItemStack item = ((ItemEntity)entity).getItem();
+        if ((x instanceof EntityIota)) {
+            stack.remove(stack.size()-2);
+            Entity entity = ((EntityIota) x).getEntity();
+            ItemStack item = ((ItemEntity)entity).getItem();
 
-        CastingImage image2 = image.copy(stack,image.getParenCount(),image.getParenthesized(),image.getEscapeNext(),image.getOpsConsumed(),image.getUserData());
-        CastingVM vm = new CastingVM(image2,env);
-        ADIotaHolder datumHolder = IXplatAbstractions.INSTANCE.findDataHolder(entity);
-        if (datumHolder == null) {throw MishapBadEntity.of(entity, "iota.write");}
+            CastingImage image2 = image.copy(stack,image.getParenCount(),image.getParenthesized(),image.getEscapeNext(),image.getOpsConsumed(),image.getUserData());
+            CastingVM vm = new CastingVM(image2,env);
+            ADIotaHolder datumHolder = IXplatAbstractions.INSTANCE.findDataHolder(entity);
+            if (datumHolder == null) {throw MishapBadEntity.of(entity, "iota.write");}
 
-        if (!datumHolder.writeIota(datum, true)){
-            throw MishapBadEntity.of(entity, "iota.write");}
-        ListIota hex =  (ListIota) IotaType.deserialize((CompoundTag) item.getTag().get("riggedwrite"),env.getWorld());
-        List<Iota> temp = new ArrayList<Iota>();
-        hex.getList().forEach(temp::add);
-        ExecutionClientView result = vm.queueExecuteAndWrapIotas(temp,env.getWorld());
-        if (result.getResolutionType() == ResolvedPatternType.ERRORED) {
-            throw new MishapInternalHex();
-        }
-        img = vm.getImage();
-        List<Iota> stack2 = img.getStack();
-        Iota top = stack2.remove(stack2.size()-1);
-        stack2.add(stack2.size(),x);
-        stack2.add(stack2.size(),top);
-        img = img.copy(stack2,img.getParenCount(),img.getParenthesized(),img.getEscapeNext(),img.getOpsConsumed(),img.getUserData());
-        cont = continuation;
+            if (!datumHolder.writeIota(datum, true)){
+                throw MishapBadEntity.of(entity, "iota.write");}
+            ListIota hex =  (ListIota) IotaType.deserialize((CompoundTag) item.getTag().get("riggedwrite"),env.getWorld());
+            List<Iota> temp = new ArrayList<Iota>();
+            hex.getList().forEach(temp::add);
+            ExecutionClientView result = vm.queueExecuteAndWrapIotas(temp,env.getWorld());
+            if (result.getResolutionType() == ResolvedPatternType.ERRORED) {
+                throw new MishapInternalHex();
+            }
+            img = vm.getImage();
+            List<Iota> stack2 = img.getStack();
+            Iota top = stack2.remove(stack2.size()-1);
+            stack2.add(stack2.size(),x);
+            stack2.add(stack2.size(),top);
+            img = img.copy(stack2,img.getParenCount(),img.getParenthesized(),img.getEscapeNext(),img.getOpsConsumed(),img.getUserData());
+            cont = continuation;
 
-        if (top instanceof BooleanIota) {
-            stack.remove(stack.size()-1);
+            if (top instanceof BooleanIota) {
+                stack.remove(stack.size()-1);
 
-            img = img.copy(stack,img.getParenCount(),img.getParenthesized(),img.getEscapeNext(),img.getOpsConsumed(),img.getUserData());
-            if (!((BooleanIota)top).getBool()) {
-                List<OperatorSideEffect> sideEffects = new ArrayList<OperatorSideEffect>();
-                return new OperationResult(img,sideEffects,cont, HexEvalSounds.MUTE);
+                img = img.copy(stack,img.getParenCount(),img.getParenthesized(),img.getEscapeNext(),img.getOpsConsumed(),img.getUserData());
+                if (!((BooleanIota)top).getBool()) {
+                    List<OperatorSideEffect> sideEffects = new ArrayList<OperatorSideEffect>();
+                    return new OperationResult(img,sideEffects,cont, HexEvalSounds.MUTE);
+                }
             }
         }
-
         return original.call(env,img,cont);
-
     }
 }
 

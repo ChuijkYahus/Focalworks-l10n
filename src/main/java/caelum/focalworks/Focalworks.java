@@ -1,13 +1,23 @@
 package caelum.focalworks;
 
+import at.petrak.hexcasting.api.casting.RenderedSpell;
+import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
+import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
+import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import caelum.focalworks.registry.FocalworksActions;
 
+import java.util.HashMap;
+import java.util.List;
+
 public class Focalworks implements ModInitializer {
+    public static final ThreadLocal<HashMap<String,Object>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
 	public static final String MOD_ID = "focalworks";
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
@@ -26,10 +36,21 @@ public class Focalworks implements ModInitializer {
         FocalworksActions.init();
 		LOGGER.info("Focalworks' actions registering!");
 	}
-    public static Integer clamp(int val, int min, int max) {
-        if (val > max) {
-            return max;
-        }
+    public static int clamp(int val, int min, int max) {
         return Math.min(max,Math.max(val, min));
     }
+    public static RenderedSpell emptyRenderedSpell() {
+        return new RenderedSpell() {
+            @Override
+            public void cast(@NotNull CastingEnvironment castingEnvironment) {
+
+            }
+
+            @Override
+            public @Nullable CastingImage cast(@NotNull CastingEnvironment castingEnvironment, @NotNull CastingImage castingImage) {
+                return null;
+            }
+        };
+    }
 }
+
