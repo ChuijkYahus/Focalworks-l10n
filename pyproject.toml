@@ -12,17 +12,20 @@ name = "hexdoc-focalworks"
 description = "Focalworks addon for Hex Casting."
 readme = "doc/README.md"
 authors = [
-    { name="c-Caelum" },
+    { name="Caelum" },
 ]
 keywords = ["hexdoc"]
 requires-python = ">=3.12"
 dynamic = ["version", "dependencies", "optional-dependencies"]
+
+
 
 [project.urls]
 Homepage = "https://c-caelum.github.io/Focalworks"
 Source = "https://github.com/c-Caelum/Focalworks"
 
 # project version
+
 
 [tool.hatch.version]
 scheme = "gradle"
@@ -32,11 +35,17 @@ key = "mod_version"
 
 # Python dependencies
 
+override-dependencies = [
+    "hexdoc-hexcasting==0.11.3.*", # lots of addons depend on hex ~= 0.11.2.1.0, which prevents us from updating it :/
+]
+
 # required
 [tool.hatch.metadata.hooks.gradle-properties]
 dependencies = [
     { package="hexdoc-hexcasting", op="~=", py-version="1.0", key="hexcasting_version" },
+    { package="hexdoc-ioticblocks", op=">=", py-version="1.0", key="iotic_blocks_version" }
 ]
+
 
 # dev-only
 [dependency-groups]
