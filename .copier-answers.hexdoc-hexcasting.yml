@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+# https://copier.readthedocs.io/en/stable/updating/#never-change-the-answers-file-manually
+_commit: v0.2.0
+_src_path: gh:hexdoc-dev/hexdoc-hexcasting-template
+advanced: false
+github_repo: Focalworks
+github_user: c-Caelum
+gradle_deps_type: gradle.properties
+gradle_hex_version_key: hexcasting_version
+gradle_mod_version_key: mod_version
+main_branch: main
+minecraft_version: 1.20.1
+minecraft_version_in_mod_version: false
+mod_description: Focalworks addon for Hex Casting.
+mod_display_name: Focalworks
+modid: focalworks
+multiloader: false
+pattern_registry_path: main/java/io/github/c-caelum/focalworks/registry/FocalworksActions.java

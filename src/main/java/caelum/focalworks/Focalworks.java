@@ -4,9 +4,13 @@ import at.petrak.hexcasting.api.casting.RenderedSpell;
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
+import caelum.focalworks.registry.FocalworksBlockEntities;
+import caelum.focalworks.registry.FocalworksBlocks;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +20,7 @@ import caelum.focalworks.registry.FocalworksActions;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class Focalworks implements ModInitializer {
     public static final ThreadLocal<HashMap<String,Object>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
@@ -35,6 +40,8 @@ public class Focalworks implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
         FocalworksActions.init();
+        FocalworksBlocks.registerBlocks(bind(BuiltInRegistries.BLOCK));
+        FocalworksBlockEntities.registerTiles(bind(BuiltInRegistries.BLOCK_ENTITY_TYPE));
 		LOGGER.info("I slipped and hit the init button!!!!");
 	}
     public static int clamp(int val, int min, int max) {
@@ -51,5 +58,13 @@ public class Focalworks implements ModInitializer {
             return null;
         }
     };
+    private static <T> BiConsumer<T, ResourceLocation> bind(Registry<T> registry) {
+        return new BiConsumer<T, ResourceLocation>() {
+            @Override
+            public void accept(T t, ResourceLocation resourceLocation) {
+                Registry.register(registry, resourceLocation, t);
+            }
+        };
+    }
 }
 
