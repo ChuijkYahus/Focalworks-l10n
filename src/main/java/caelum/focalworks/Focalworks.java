@@ -1,17 +1,33 @@
 package caelum.focalworks;
 
+import at.petrak.hexcasting.api.addldata.ADIotaHolder;
 import at.petrak.hexcasting.api.casting.RenderedSpell;
+import at.petrak.hexcasting.api.casting.SpellList;
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
+import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
+import at.petrak.hexcasting.api.casting.iota.BooleanIota;
+import at.petrak.hexcasting.api.casting.iota.Iota;
+import at.petrak.hexcasting.api.casting.iota.IotaType;
+import at.petrak.hexcasting.api.casting.iota.ListIota;
+import at.petrak.hexcasting.api.utils.NBTHelper;
 import caelum.focalworks.registry.FocalworksBlockEntities;
 import caelum.focalworks.registry.FocalworksBlocks;
+import com.mojang.datafixers.util.Pair;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.internal.Intrinsics;
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -20,10 +36,28 @@ import caelum.focalworks.registry.FocalworksActions;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Focalworks implements ModInitializer {
+
+    public interface WriteConsumer<T> {
+        void consume(SpellContinuation continuation, ServerLevel level, CastingVM vm, T Target);
+    }
+
+    public interface WriteTargetSerializer<T> {
+        T read(CompoundTag tag, ServerLevel world);
+        void write(CompoundTag tag, T target);
+    }
+
     public static final ThreadLocal<HashMap<String,Object>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
+    public static final HashMap<String, WriteConsumer<?>> WRITE_CONSUMER_HASHMAP = new HashMap<>();
+    public static final HashMap<String, WriteTargetSerializer<?>> WRITE_TARGET_SERIALIZER_HASHMAP = new HashMap<>();
+
+
+
 	public static final String MOD_ID = "focalworks";
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
@@ -65,6 +99,22 @@ public class Focalworks implements ModInitializer {
                 Registry.register(registry, resourceLocation, t);
             }
         };
+    }
+    public static SpellList modifySpellListAt(SpellList list, int index, Iota iota) {
+        SpellList newList = list.modifyAt(index, new Function1() {
+            @NotNull
+            public final SpellList invoke(@NotNull SpellList it) {
+                Intrinsics.checkNotNullParameter(it, "it");
+                return (SpellList)(new SpellList.LPair(iota, it.getCdr()));
+            }
+
+            // $FF: synthetic method
+            // $FF: bridge method
+            public Object invoke(Object p1) {
+                return this.invoke((SpellList)p1);
+            }
+        });
+        return newList;
     }
 }
 

@@ -1,4 +1,4 @@
-package caelum.focalworks.mixin.hexcasting;
+package caelum.focalworks.mixin.ioticblocks_specials;
 
 import at.petrak.hexcasting.api.addldata.ADIotaHolder;
 import at.petrak.hexcasting.api.casting.SpellList;
@@ -16,51 +16,49 @@ import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import caelum.focalworks.Focalworks;
 import caelum.focalworks.api.RiggedHexFinder;
 import caelum.focalworks.casting.frames.FrameWrite;
-import com.llamalad7.mixinextras.expression.Definition;
-import static caelum.focalworks.Focalworks.*;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.datafixers.util.Either;
+import gay.object.ioticblocks.api.IoticBlocksAPI;
+import gay.object.ioticblocks.utils.IoticBlocksUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-@Mixin(value = OpTheCoolerWrite.class,remap = false)
-public class MixinOpTheCoolerWrite {
+@Mixin(value = OpTheCoolerWrite.class,remap = false, priority=99)
+public class MixinOpWriteBlock {
     @Unique
     private List<Iota> stack = null;
     @Unique
-    @Expression("return ?")
+    private SpellContinuation cont;
+    @Unique
     //@ModifyArg(method = "execute", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/common/casting/actions/rw/OpWrite$Spell;<init>(Lat/petrak/hexcasting/api/casting/iota/Iota;Lat/petrak/hexcasting/api/addldata/ADIotaHolder;)V"))
-    @Inject(method = "execute", at = @At(value = "MIXINEXTRAS:EXPRESSION"), cancellable = true)
-    private void focalworks_execute(List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<SpellAction.Result> cir, @Local(name = "datum") Iota datum, @Local(name = "target") Entity target) {
-        if (!(target instanceof ItemEntity itemEntity)) {
-            return;
-        }
-        ItemStack itemStack = itemEntity.getItem();
-        SpellList hex = RiggedHexFinder.get_rig_item(itemStack, env.getWorld(), "riggedwrite");
+    @Inject(method = "execute", at = @At(value = "HEAD"), cancellable = true)
+    private void focalworks_execute(List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<SpellAction.Result> cir) {
+        Either<Entity, BlockPos> target_ = IoticBlocksUtils.getEntityOrBlockPos(args, 0, 2);
+        Iota datum = args.get(1);
+        if (target_.left().isPresent()) {return;}
+        BlockPos target = target_.right().get();
+        SpellList hex = RiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedwrite");
         if (hex != null) {
             HashMap<String, Object> map = Focalworks.CONTEXT.get();
-            SpellContinuation continuation = (SpellContinuation) map.get("continuation");
-            continuation = continuation
-                    .pushFrame(new FrameWrite(target, "basic_entity_write","basic_entity_write"))
+            cont = cont
+                    .pushFrame(new FrameWrite(target, "block_write","block_write"))
                     .pushFrame(new FrameEvaluate(hex, false));
-            map.put("continuation",continuation);
             stack = List.of(datum);
             cir.setReturnValue(new SpellAction.Result(
                     Focalworks.emptyRenderedSpell,
@@ -73,6 +71,8 @@ public class MixinOpTheCoolerWrite {
 
     @WrapOperation(method= "operate", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/api/casting/castables/SpellAction$DefaultImpls;operate(Lat/petrak/hexcasting/api/casting/castables/SpellAction;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lat/petrak/hexcasting/api/casting/eval/vm/CastingImage;Lat/petrak/hexcasting/api/casting/eval/vm/SpellContinuation;)Lat/petrak/hexcasting/api/casting/eval/OperationResult;"))
     private OperationResult focalworks_operate(SpellAction spell, CastingEnvironment env, CastingImage image, SpellContinuation continuation, Operation<OperationResult> original) {
+        cont = continuation;
+        stack = null;
         OperationResult old = original.call(spell, env, image, continuation);
         if (stack == null) {return old;}
         CastingImage oldImage = old.component1();
@@ -86,27 +86,31 @@ public class MixinOpTheCoolerWrite {
                 oldImage.getOpsConsumed(),
                 oldImage.getUserData()
         );
-        return old.copy(newImage, old.getSideEffects(), old.getNewContinuation(), old.getSound());
+        return old.copy(newImage, old.getSideEffects(), cont, old.getSound());
     }
 
     static {
-        Focalworks.WRITE_TARGET_SERIALIZER_HASHMAP.put("basic_entity_write", new Focalworks.WriteTargetSerializer<Entity>() {
+        Focalworks.WRITE_TARGET_SERIALIZER_HASHMAP.put("block_write", new Focalworks.WriteTargetSerializer<BlockPos>() {
             @Override
-            public Entity read(CompoundTag tag, ServerLevel world) {
-                UUID uuid = NBTHelper.getUUID(tag, "target");
-                return world.getEntity(uuid);
+            public BlockPos read(CompoundTag tag, ServerLevel world) {
+                CompoundTag target = NBTHelper.getCompound(tag, "target");
+                return new BlockPos(NBTHelper.getInt(target, "x"), NBTHelper.getInt(target,"y"), NBTHelper.getInt(target, "z"));
             }
 
             @Override
-            public void write(CompoundTag tag, Entity target) {
-                NBTHelper.putUUID(tag, "target", target.getUUID());
+            public void write(CompoundTag tag, BlockPos target) {
+                CompoundTag temp = new CompoundTag();
+                NBTHelper.putInt(temp, "x", target.getX());
+                NBTHelper.putInt(temp, "y", target.getY());
+                NBTHelper.putInt(temp, "z", target.getZ());
+                NBTHelper.putCompound(tag, "target", temp);
             }
         });
-        Focalworks.WRITE_CONSUMER_HASHMAP.put("basic_entity_write", new Focalworks.WriteConsumer<Entity>() {
+        Focalworks.WRITE_CONSUMER_HASHMAP.put("block_write", new Focalworks.WriteConsumer<BlockPos>() {
             @Override
-            public void consume(SpellContinuation continuation, ServerLevel world, CastingVM vm, Entity target) {
+            public void consume(SpellContinuation continuation, ServerLevel world, CastingVM vm, BlockPos target) {
                 CastingEnvironment env = vm.getEnv();
-                if (!(env.isEntityInRange(target))) {return;}
+                if (!(env.isVecInAmbit(target.getCenter()))) {return;}
                 CastingImage image = vm.getImage();
                 List<Iota> stack = image.getStack();
                 int stackSize = stack.size();
@@ -125,7 +129,7 @@ public class MixinOpTheCoolerWrite {
                     datum = top;
                 }
 
-                ADIotaHolder datumHolder = IXplatAbstractions.INSTANCE.findDataHolder(target);
+                ADIotaHolder datumHolder = IoticBlocksAPI.INSTANCE.findIotaHolder(world, target);
                 if (datumHolder != null) {
                     datumHolder.writeIota(datum, false);
                 }

@@ -6,6 +6,7 @@ import at.petrak.hexcasting.api.casting.eval.OperationResult;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
+import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.casting.mishaps.MishapEvalTooMuch;
 import at.petrak.hexcasting.api.mod.HexConfig;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite;
@@ -22,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Mixin(SpellAction.DefaultImpls.class)
 public final class MixinSpellActionDefaultImpls {
@@ -29,40 +31,17 @@ public final class MixinSpellActionDefaultImpls {
     private static void operate0(SpellAction $this, CastingEnvironment env, CastingImage image, SpellContinuation continuation, CallbackInfoReturnable<OperationResult> cir) {
         if (($this instanceof OpWrite) || ($this instanceof OpTheCoolerWrite)) {
             HashMap<String,Object> map = Focalworks.CONTEXT.get();
-            if(image.getOpsConsumed()+1 >= HexConfig.server().maxOpCount()) {
-                throw new MishapEvalTooMuch();
-            }
-
-            if (map.containsKey("vm")) {
-                CastingVM vm = (CastingVM) map.get("vm");
-                vm.setImage(image.withUsedOp());
-                map.put("vm",vm);
-                Focalworks.CONTEXT.set(map);
-            }
-            map.put("vm",new CastingVM(image.copy(
-                    image.getStack(),
-                    image.getParenCount(),
-                    image.getParenthesized(),
-                    image.getEscapeNext(),
-                    image.getOpsConsumed()+1,
-                    image.getUserData()
-            ),env));
-            Focalworks.CONTEXT.set(map);
+            map.put("continuation",continuation);
         }
     }
     @Definition(id = "executeWithUserdata", method = "Lat/petrak/hexcasting/api/casting/castables/SpellAction;executeWithUserdata(Ljava/util/List;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lnet/minecraft/nbt/CompoundTag;)Lat/petrak/hexcasting/api/casting/castables/SpellAction$Result;")
     @Expression("? = ?.executeWithUserdata(?, ?, ?)")
     @Inject(method="operate",at= @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
-    private static void operate1(SpellAction $this, CastingEnvironment environment, CastingImage castingImage, SpellContinuation spellContinuation, CallbackInfoReturnable<OperationResult> cir, @Local LocalRef<CastingEnvironment> env, @Local LocalRef<CastingImage> image, @Local LocalRef<SpellContinuation> continuation) {
+    private static void operate1(SpellAction $this, CastingEnvironment environment, CastingImage castingImage, SpellContinuation spellContinuation, CallbackInfoReturnable<OperationResult> cir, @Local(argsOnly = true) LocalRef<SpellContinuation> continuation, @Local(argsOnly = true) LocalRef<CastingImage> image) {
         if (($this instanceof OpWrite) || ($this instanceof OpTheCoolerWrite)) {
             HashMap<String,Object> map = Focalworks.CONTEXT.get();
-            CastingVM vm = (CastingVM) map.get("vm");
-            env.set(vm.getEnv());
-            CastingImage img = vm.getImage();
-            CompoundTag userdata = img.getUserData();
-            if (userdata.contains("isInRiggedHex")) userdata.remove("isInRiggedHex");
-
-            image.set(img.copy(img.getStack(), img.getParenCount(), img.getParenthesized(),img.getEscapeNext(),img.getOpsConsumed(), userdata));
+            SpellContinuation resultContinuation = (SpellContinuation) map.get("continuation");
+            continuation.set(resultContinuation);
         }
     }
 }

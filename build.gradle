@@ -115,15 +115,12 @@ dependencies {
 
     modCompileOnly "gay.object.ioticblocks:ioticblocks-fabric:${iotic_blocks_version}+1.20.1"
     modLocalRuntime "gay.object.ioticblocks:ioticblocks-fabric:${iotic_blocks_version}+1.20.1"
+    modCompileOnly "gay.object.hexdebug:hexdebug-fabric:${project.hexdebug_version}+${project.minecraft_version}"
+    modLocalRuntime "gay.object.hexdebug:hexdebug-fabric:${project.hexdebug_version}+${project.minecraft_version}"
     /*modCompileOnly "gay.object.hexdebug:hexdebug-fabric:0.8.0+1.20.1"
     modLocalRuntime "gay.object.hexdebug:hexdebug-fabric:0.8.0+1.20.1"
     /*modCompileOnly "gay.object.hexdebug.hexdebug-fabric:${project.hexdebug_version}+${project.minecraft_version}"
     modLocalRuntime "gay.object.hexdebug.hexdebug-fabric:${project.hexdebug_version}+${project.minecraft_version}"*/
-    modCompileOnly "maven.modrinth:lapisworks:1.5.8.1"
-    modLocalRuntime "maven.modrinth:lapisworks:1.5.8.1"
-    modImplementation("dev.emi:trinkets:${trinkets_version}")
-    modCompileOnly "com.jamieswhiteshirt:reach-entity-attributes:2.4.0"
-    modLocalRuntime "com.jamieswhiteshirt:reach-entity-attributes:2.4.0"
 }
 
 processResources {

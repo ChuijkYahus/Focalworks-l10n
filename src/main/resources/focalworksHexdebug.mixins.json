@@ -4,6 +4,7 @@
   "package": "caelum.focalworks.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "hexdebug.MixinScryingLensOverlay"
   ],
   "injectors": {
     "defaultRequire": 1
