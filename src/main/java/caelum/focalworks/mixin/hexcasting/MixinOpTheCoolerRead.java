@@ -9,7 +9,7 @@ import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.api.casting.iota.EntityIota;
 import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerRead;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -35,9 +35,10 @@ public class MixinOpTheCoolerRead {
         List<Iota> stack = image.getStack();
         Iota x = stack.get(stack.size()-1);
         if ((x instanceof EntityIota)) {
+            if (!(((EntityIota) x).getEntity() instanceof ItemEntity)) {return;}
             Entity entity = ((EntityIota) x).getEntity();
             ItemStack item = ((ItemEntity)entity).getItem();
-            SpellList hex = RiggedHexFinder.get_rig_item(item,env.getWorld(),"riggedread");
+            SpellList hex = OldRiggedHexFinder.get_rig_item(item,env.getWorld(),"riggedread");
             if (hex != null ) {
                 FrameEvaluate frame = new FrameEvaluate(hex, true);
                 cir.setReturnValue(new OperationResult(cir.getReturnValue().component1(),cir.getReturnValue().component2(),continuation.pushFrame(frame),cir.getReturnValue().component4()));

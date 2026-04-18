@@ -12,14 +12,11 @@ import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.api.casting.iota.*;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite;
-import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import caelum.focalworks.Focalworks;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import caelum.focalworks.casting.frames.FrameWrite;
-import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Either;
 import gay.object.ioticblocks.api.IoticBlocksAPI;
 import gay.object.ioticblocks.utils.IoticBlocksUtils;
@@ -27,8 +24,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,7 +32,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 @Mixin(value = OpTheCoolerWrite.class,remap = false, priority=99)
 public class MixinOpWriteBlock {
@@ -53,7 +47,7 @@ public class MixinOpWriteBlock {
         Iota datum = args.get(1);
         if (target_.left().isPresent()) {return;}
         BlockPos target = target_.right().get();
-        SpellList hex = RiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedwrite");
+        SpellList hex = OldRiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedwrite");
         if (hex != null) {
             HashMap<String, Object> map = Focalworks.CONTEXT.get();
             cont = cont

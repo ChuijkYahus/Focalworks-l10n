@@ -15,7 +15,7 @@ import at.petrak.hexcasting.api.casting.iota.ListIota;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import caelum.focalworks.Focalworks;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import caelum.focalworks.casting.frames.FrameWrite;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -55,10 +55,10 @@ public class MixinOpWriteIndex {
         if (target.left().isPresent()) {
             final Entity temp = target.left().get();
             if (!(temp instanceof ItemEntity)) {return;}
-            hex = RiggedHexFinder.get_rig_item(((ItemEntity) temp).getItem(), env.getWorld(), "riggedwriteindex");
+            hex = OldRiggedHexFinder.get_rig_item(((ItemEntity) temp).getItem(), env.getWorld(), "riggedwriteindex");
         } else {
             final BlockPos pos = target.right().get();
-            hex = RiggedHexFinder.get_rig_vec(pos,env.getWorld(),"riggedwriteindex");
+            hex = OldRiggedHexFinder.get_rig_vec(pos,env.getWorld(),"riggedwriteindex");
         }
         if (hex != null) {
             cont = cont
