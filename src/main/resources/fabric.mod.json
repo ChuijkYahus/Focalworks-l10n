@@ -41,5 +41,10 @@
       "ioticblocks": ">=1.0.2",
       "lapisworks": ">=1.5.7",
       "hexdebug": ">=0.8.0"
-    }
+    },
+	"custom": {
+		"cardinal-components": [
+			"focalworks:rigged"
+		]
+	}
 }

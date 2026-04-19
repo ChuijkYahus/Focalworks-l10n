@@ -8,13 +8,10 @@ import at.petrak.hexcasting.api.casting.eval.OperationResult;
 import at.petrak.hexcasting.api.casting.eval.vm.*;
 import at.petrak.hexcasting.api.casting.iota.BooleanIota;
 import at.petrak.hexcasting.api.casting.iota.Iota;
-import at.petrak.hexcasting.api.casting.iota.IotaType;
-import at.petrak.hexcasting.api.casting.iota.ListIota;
-import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.casting.actions.rw.OpWrite;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import caelum.focalworks.Focalworks;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import caelum.focalworks.casting.frames.FrameWrite;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -23,7 +20,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,7 +38,7 @@ public class MixinOpWrite {
     //@ModifyArg(method = "execute", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/common/casting/actions/rw/OpWrite$Spell;<init>(Lat/petrak/hexcasting/api/casting/iota/Iota;Lat/petrak/hexcasting/api/addldata/ADIotaHolder;)V"))
     @Inject(method = "execute", at = @At(value = "MIXINEXTRAS:EXPRESSION"), cancellable = true)
     private void focalworks_execute(List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<SpellAction.Result> cir, @Local(name = "datum") Iota datum, @Local(name = "handStack") ItemStack handStack) {
-        SpellList hex = RiggedHexFinder.get_rig_item(handStack, env.getWorld(), "riggedwrite");
+        SpellList hex = OldRiggedHexFinder.get_rig_item(handStack, env.getWorld(), "riggedwrite");
         if (hex != null) {
             HashMap<String, Object> map = Focalworks.CONTEXT.get();
             SpellContinuation continuation = (SpellContinuation) map.get("continuation");
@@ -57,7 +53,7 @@ public class MixinOpWrite {
                     List.of(),
                     1L
             ));
-        }
+        } else {stack = null;}
     }
 
     @WrapOperation(method= "operate", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/api/casting/castables/SpellAction$DefaultImpls;operate(Lat/petrak/hexcasting/api/casting/castables/SpellAction;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lat/petrak/hexcasting/api/casting/eval/vm/CastingImage;Lat/petrak/hexcasting/api/casting/eval/vm/SpellContinuation;)Lat/petrak/hexcasting/api/casting/eval/OperationResult;"))
@@ -119,4 +115,7 @@ public class MixinOpWrite {
             }
         });
     }
+
+
+
 }

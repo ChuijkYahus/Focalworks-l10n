@@ -3,39 +3,26 @@ package caelum.focalworks.mixin.ioticblocks_specials.OpReadIndex;
 
 import at.petrak.hexcasting.api.casting.SpellList;
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
-import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import at.petrak.hexcasting.api.casting.eval.vm.FrameEvaluate;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.api.casting.iota.Iota;
-import at.petrak.hexcasting.api.casting.iota.IotaType;
-import at.petrak.hexcasting.api.casting.iota.ListIota;
-import at.petrak.hexcasting.api.utils.HexUtils;
 import caelum.focalworks.Focalworks;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Either;
 import gay.object.ioticblocks.casting.actions.OpReadIndex;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import org.apache.commons.compress.compressors.lz77support.LZ77Compressor;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static at.petrak.hexcasting.api.casting.iota.IotaType.deserialize;
 import java.util.HashMap;
 import java.util.List;
-
-import static at.petrak.hexcasting.api.casting.iota.IotaType.deserialize;
-import static at.petrak.hexcasting.api.casting.iota.IotaType.serialize;
 
 
 // intellij is wrong, this is actually okay
@@ -55,11 +42,11 @@ public class MixinOpReadIndex {
             List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<List<Iota>> cir, @Local Either<Entity, BlockPos> target) {
         SpellList hex = null;
         if (target.right().isPresent()) {
-            hex = RiggedHexFinder.get_rig_vec(target.right().get(),env.getWorld(),"riggedreadindex");
+            hex = OldRiggedHexFinder.get_rig_vec(target.right().get(),env.getWorld(),"riggedreadindex");
         } else {
             Entity entity = target.left().get();
             if (entity instanceof ItemEntity) {
-                hex = RiggedHexFinder.get_rig_item(((ItemEntity) entity).getItem(),env.getWorld(),"riggedreadindex");
+                hex = OldRiggedHexFinder.get_rig_item(((ItemEntity) entity).getItem(),env.getWorld(),"riggedreadindex");
             }
         }
         if (hex != null) {

@@ -10,7 +10,7 @@ import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.casting.mishaps.MishapBadBlock;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerRead;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import gay.object.ioticblocks.impl.IoticBlocksAPIImpl;
 import gay.object.ioticblocks.utils.IoticBlocksUtils;
 
@@ -55,7 +55,7 @@ public class MixinOpReadBlock {
             if (datum == null) {
                 throw MishapBadBlock.of(target,"iota.read");
             }
-            SpellList hex = RiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedread");
+            SpellList hex = OldRiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedread");
             if (hex != null) {
                 FrameEvaluate frame = new FrameEvaluate(hex, true);
                 cont = cont.pushFrame(frame);

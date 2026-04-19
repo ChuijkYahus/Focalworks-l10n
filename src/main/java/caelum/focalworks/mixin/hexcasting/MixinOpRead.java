@@ -10,7 +10,7 @@ import at.petrak.hexcasting.api.casting.eval.vm.FrameEvaluate;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
 import at.petrak.hexcasting.common.casting.actions.rw.OpRead;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,7 +30,7 @@ public class MixinOpRead{
             return dataHolder != null && (dataHolder.readIota(env.getWorld()) != null || dataHolder.emptyIota() != null)
                     && stack.hasTag() && stack.getOrCreateTag().contains("riggedread");});
         if (info != null) {
-            SpellList hex = RiggedHexFinder.get_rig_item(info.stack(),env.getWorld(),"riggedread");
+            SpellList hex = OldRiggedHexFinder.get_rig_item(info.stack(),env.getWorld(),"riggedread");
             if (hex != null) {
                 FrameEvaluate frame = new FrameEvaluate(hex, true);
                 cir.setReturnValue(new OperationResult(cir.getReturnValue().component1(), cir.getReturnValue().component2(), continuation.pushFrame(frame), cir.getReturnValue().component4()));

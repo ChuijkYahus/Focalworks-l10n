@@ -9,31 +9,27 @@ import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import at.petrak.hexcasting.api.casting.eval.vm.FrameEvaluate;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
-import at.petrak.hexcasting.api.casting.iota.*;
+import at.petrak.hexcasting.api.casting.iota.BooleanIota;
+import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite;
 import at.petrak.hexcasting.xplat.IXplatAbstractions;
 import caelum.focalworks.Focalworks;
-import caelum.focalworks.api.RiggedHexFinder;
+import caelum.focalworks.api.OldRiggedHexFinder;
 import caelum.focalworks.casting.frames.FrameWrite;
-import com.llamalad7.mixinextras.expression.Definition;
-import static caelum.focalworks.Focalworks.*;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
@@ -53,7 +49,7 @@ public class MixinOpTheCoolerWrite {
             return;
         }
         ItemStack itemStack = itemEntity.getItem();
-        SpellList hex = RiggedHexFinder.get_rig_item(itemStack, env.getWorld(), "riggedwrite");
+        SpellList hex = OldRiggedHexFinder.get_rig_item(itemStack, env.getWorld(), "riggedwrite");
         if (hex != null) {
             HashMap<String, Object> map = Focalworks.CONTEXT.get();
             SpellContinuation continuation = (SpellContinuation) map.get("continuation");
@@ -86,6 +82,7 @@ public class MixinOpTheCoolerWrite {
                 oldImage.getOpsConsumed(),
                 oldImage.getUserData()
         );
+        stack = null;
         return old.copy(newImage, old.getSideEffects(), old.getNewContinuation(), old.getSound());
     }
 
