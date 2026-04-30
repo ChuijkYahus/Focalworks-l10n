@@ -9,7 +9,8 @@ import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingVM;
 import at.petrak.hexcasting.api.casting.eval.vm.FrameEvaluate;
 import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation;
-import at.petrak.hexcasting.api.casting.iota.*;
+import at.petrak.hexcasting.api.casting.iota.BooleanIota;
+import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.utils.NBTHelper;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerWrite;
 import caelum.focalworks.Focalworks;
@@ -30,7 +31,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Mixin(value = OpTheCoolerWrite.class,remap = false, priority=99)
@@ -48,19 +48,17 @@ public class MixinOpWriteBlock {
         if (target_.left().isPresent()) {return;}
         BlockPos target = target_.right().get();
         SpellList hex = OldRiggedHexFinder.get_rig_vec(target,env.getWorld(),"riggedwrite");
-        if (hex != null) {
-            HashMap<String, Object> map = Focalworks.CONTEXT.get();
-            cont = cont
-                    .pushFrame(new FrameWrite(target, "block_write","block_write"))
-                    .pushFrame(new FrameEvaluate(hex, false));
-            stack = List.of(datum);
-            cir.setReturnValue(new SpellAction.Result(
-                    Focalworks.emptyRenderedSpell,
-                    0L,
-                    List.of(),
-                    1L
-            ));
-        }
+        if (hex == null) {return;}
+        cont = cont
+                .pushFrame(new FrameWrite(target, "block_write", "block_write"))
+                .pushFrame(new FrameEvaluate(hex, false));
+        stack = List.of(datum);
+        cir.setReturnValue(new SpellAction.Result(
+                Focalworks.emptyRenderedSpell,
+                0L,
+                List.of(),
+                1L
+        ));
     }
 
     @WrapOperation(method= "operate", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/api/casting/castables/SpellAction$DefaultImpls;operate(Lat/petrak/hexcasting/api/casting/castables/SpellAction;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lat/petrak/hexcasting/api/casting/eval/vm/CastingImage;Lat/petrak/hexcasting/api/casting/eval/vm/SpellContinuation;)Lat/petrak/hexcasting/api/casting/eval/OperationResult;"))

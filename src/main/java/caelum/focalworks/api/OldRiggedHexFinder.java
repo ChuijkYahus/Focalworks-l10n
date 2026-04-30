@@ -23,7 +23,7 @@ import java.util.List;
 public class OldRiggedHexFinder {
     public static SpellList get_rig_vec(BlockPos pos, ServerLevel world, String key) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        assert blockEntity != null;
+        if (blockEntity == null) {return null;}
         CompoundTag tag = blockEntity.saveWithoutMetadata();
         if (NBTHelper.contains(tag,key)) {
             return ((ListIota) IotaType.deserialize((CompoundTag) NBTHelper.get(tag, key), world)).getList();

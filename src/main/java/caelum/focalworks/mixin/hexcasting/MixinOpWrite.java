@@ -33,6 +33,10 @@ import java.util.List;
 public class MixinOpWrite {
     @Unique
     private List<Iota> stack = null;
+
+    @Unique
+    private SpellContinuation cont;
+
     @Unique
     @Expression("return ?")
     //@ModifyArg(method = "execute", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/common/casting/actions/rw/OpWrite$Spell;<init>(Lat/petrak/hexcasting/api/casting/iota/Iota;Lat/petrak/hexcasting/api/addldata/ADIotaHolder;)V"))
@@ -42,7 +46,7 @@ public class MixinOpWrite {
         if (hex != null) {
             HashMap<String, Object> map = Focalworks.CONTEXT.get();
             SpellContinuation continuation = (SpellContinuation) map.get("continuation");
-            continuation = continuation
+            cont = cont
                     .pushFrame(new FrameWrite(null, "basic_hand_write","basic_hand_write"))
                     .pushFrame(new FrameEvaluate(hex, false));
             map.put("continuation",continuation);
@@ -58,7 +62,7 @@ public class MixinOpWrite {
 
     @WrapOperation(method= "operate", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/api/casting/castables/SpellAction$DefaultImpls;operate(Lat/petrak/hexcasting/api/casting/castables/SpellAction;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lat/petrak/hexcasting/api/casting/eval/vm/CastingImage;Lat/petrak/hexcasting/api/casting/eval/vm/SpellContinuation;)Lat/petrak/hexcasting/api/casting/eval/OperationResult;"))
     private OperationResult focalworks_operate(SpellAction spell, CastingEnvironment env, CastingImage image, SpellContinuation continuation, Operation<OperationResult> original) {
-
+        cont = continuation;
         OperationResult old = original.call(spell, env, image, continuation);
         if (stack == null) {return old;}
         CastingImage oldImage = old.component1();

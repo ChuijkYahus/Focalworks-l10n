@@ -2,6 +2,7 @@ package caelum.focalworks.mixin.ioticblocks_specials;
 
 import at.petrak.hexcasting.api.addldata.ADIotaHolder;
 import at.petrak.hexcasting.api.casting.SpellList;
+import at.petrak.hexcasting.api.casting.castables.ConstMediaAction;
 import at.petrak.hexcasting.api.casting.eval.CastingEnvironment;
 import at.petrak.hexcasting.api.casting.eval.OperationResult;
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage;
@@ -11,6 +12,8 @@ import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.casting.mishaps.MishapBadBlock;
 import at.petrak.hexcasting.common.casting.actions.rw.OpTheCoolerRead;
 import caelum.focalworks.api.OldRiggedHexFinder;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import gay.object.ioticblocks.impl.IoticBlocksAPIImpl;
 import gay.object.ioticblocks.utils.IoticBlocksUtils;
 
@@ -29,17 +32,15 @@ public class MixinOpReadBlock {
     public int getArgc() {return 0;}
 
     @Unique
-    private static SpellContinuation cont;
+    private SpellContinuation cont = null;
 
-    @Inject(method="operate",at= @At(value = "HEAD"))
-    private static void operate(CastingEnvironment env, CastingImage image, SpellContinuation continuation, CallbackInfoReturnable<OperationResult> cir) {
+    @WrapOperation(method = "operate", at = @At(value = "INVOKE", target = "Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction$DefaultImpls;operate(Lat/petrak/hexcasting/api/casting/castables/ConstMediaAction;Lat/petrak/hexcasting/api/casting/eval/CastingEnvironment;Lat/petrak/hexcasting/api/casting/eval/vm/CastingImage;Lat/petrak/hexcasting/api/casting/eval/vm/SpellContinuation;)Lat/petrak/hexcasting/api/casting/eval/OperationResult;"))
+    private OperationResult operate(ConstMediaAction $this, CastingEnvironment env, CastingImage image, SpellContinuation continuation, Operation<OperationResult> original) {
         cont = continuation;
+        OperationResult old = original.call($this, env, image, continuation);
+        return old.copy(old.getNewImage(), old.getSideEffects(), cont, old.getSound());
     }
-    @Inject(method="operate",at= @At(value = "RETURN"), cancellable = true)
-    private static void operate_after(CastingEnvironment env, CastingImage image, SpellContinuation continuation, CallbackInfoReturnable<OperationResult> cir) {
-        OperationResult result = cir.getReturnValue();
-        cir.setReturnValue(new OperationResult(result.component1(),result.component2(),cont,result.component4()));
-    }
+
     @Inject(method="execute",at= @At("HEAD"), cancellable = true, remap = false)
     private void execute(List<? extends Iota> args, CastingEnvironment env, CallbackInfoReturnable<List<Iota>> cir) {
         IoticBlocksUtils.getEntityOrBlockPos(args, 0, getArgc()).ifRight(target -> {
